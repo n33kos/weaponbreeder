@@ -1,17 +1,29 @@
-class Weapon
+class Entity
 	@stats = {
-		"weapon_damage" => 0,
-		"damage_type" => "none",
-		"weapon_appearance" => "none",
-		"weapon_size" => "none"
+		"is_mortal" => false, #can I die?
+		"hit_points" => 0, #hp 1-9999
+		"entity_type" => "none", #["object",weapon,enemy,player]
+		"size" => "none", #[tiny,small,medium,large,huge]
+		"collides_with" => "none", #["object",weapon,enemy,player]
+		"damages_on_collide" => "none", #["object",weapon,enemy,player]
+		"elemental_type" => "none", #[fire,Water,earth,air,spirit,acid,none]
+		"damage" => 0, #damage value on touch
+		"sprite" => "none", #[dagger,sword,bow,wand,rock,player,zombie]
+		"projectile" => "none" #[arrow,meteor,bolt,beam]
 	}
 
 	def initialize(stats)
 		@stats = {
-			"weapon_damage" => stats["weapon_damage"],
-			"damage_type" => stats["damage_type"],
-			"weapon_appearance" => stats["weapon_appearance"],
-			"weapon_size" => stats["weapon_size"]
+			"is_mortal" => stats["is_mortal"],
+			"hit_points" => stats["hit_points"],
+			"entity_type" => stats["entity_type"],
+			"size" => stats["size"],
+			"collides_with" => stats["collides_with"],
+			"damages_on_collide" => stats["damages_on_collide"],
+			"elemental_type" => stats["elemental_type"],
+			"damage" => stats["damage"],
+			"sprite" => stats["sprite"],
+			"projectile" => stats["projectile"]
 		}
 	end
 
@@ -30,74 +42,108 @@ class Weapon
 			end
 		end
 
-		return Weapon.new(bebe_stats)
+		return Entity.new(bebe_stats)
 	end
 end
 
 
-#------------------------Generation 1-----------------
-mom = Weapon.new({
-	"weapon_damage" => 12,
-	"damage_type" => "ice",
-	"weapon_appearance" => "sword",
-	"weapon_size" => "large"
-})
-dad = Weapon.new({
-	"weapon_damage" => 18,
-	"damage_type" => "piercing",
-	"weapon_appearance" => "bow",
-	"weapon_size" => "medium"
-})
+@gene_pool = [
+	Entity.new({
+		"is_mortal" => true,
+		"hit_points" => 5,
+		"entity_type" => "object",
+		"size" => "small",
+		"collides_with" => ['enemy','player'],
+		"damages_on_collide" => "none",
+		"elemental_type" => "fire",
+		"damage" => 2,
+		"sprite" => 'flame',
+		"projectile" => "none"
+	}),
+	Entity.new({
+		"is_mortal" => true,
+		"hit_points" => 5,
+		"entity_type" => "object",
+		"size" => "medium",
+		"collides_with" => ['enemy','player','weapon'],
+		"damages_on_collide" => "none",
+		"elemental_type" => "earth",
+		"damage" => 0,
+		"sprite" => 'rock',
+		"projectile" => "none"
+	}),
+	Entity.new({
+		"is_mortal" => false,
+		"hit_points" => 0,
+		"entity_type" => "weapon",
+		"size" => "tiny",
+		"collides_with" => ["object","weapon","enemy"],
+		"damages_on_collide" => ["object","enemy"],
+		"elemental_type" => "water",
+		"damage" => 3,
+		"sprite" => "dagger",
+		"projectile" => "none"
+	}),
+	Entity.new({
+		"is_mortal" => false,
+		"hit_points" => 0,
+		"entity_type" => "weapon",
+		"size" => "medium",
+		"collides_with" => ["object","weapon","enemy"],
+		"damages_on_collide" => ["object","enemy"],
+		"elemental_type" => "fire",
+		"damage" => 5,
+		"sprite" => "sword",
+		"projectile" => "none"
+	}),
+	Entity.new({
+		"is_mortal" => false,
+		"hit_points" => 0,
+		"entity_type" => "weapon",
+		"size" => "large",
+		"collides_with" => ["object","weapon","enemy"],
+		"damages_on_collide" => ["object","enemy"],
+		"elemental_type" => "earth",
+		"damage" => 0,
+		"sprite" => "bow",
+		"projectile" => "arrow"
+	}),
+	Entity.new({
+		"is_mortal" => false,
+		"hit_points" => 0,
+		"entity_type" => "weapon",
+		"size" => "huge",
+		"collides_with" => ["object","weapon","enemy"],
+		"damages_on_collide" => ["object","enemy"],
+		"elemental_type" => "air",
+		"damage" => 0,
+		"sprite" => "wand",
+		"projectile" => "meteor"
+	}),
+	Entity.new({
+		"is_mortal" => true,
+		"hit_points" => 5,
+		"entity_type" => "enemy",
+		"size" => "large",
+		"collides_with" => ["object","weapon","player"],
+		"damages_on_collide" => ["object","player"],
+		"elemental_type" => "acid",
+		"damage" => 10,
+		"sprite" => "zombie",
+		"projectile" => "none"
+	}),
+]
 
-g1 = mom.breed(dad)
-g12 = mom.breed(dad)
-g13 = mom.breed(dad)
-g14 = mom.breed(dad)
+@gen_1 = []
+@gene_pool.each_with_index {|val, index| 
+	@gen_1 << val.breed(@gene_pool[rand(0...@gene_pool.length)])
+}
 
 puts ""
-puts g1.get_stats()
-puts g12.get_stats()
-puts g13.get_stats()
-puts g14.get_stats()
+@gen_1.each_with_index {|val, index| 
+	val.get_stats().each do |key, value|
+		puts "#{key} --> #{value}"
+	end
+	puts ""
+}
 puts ""
-
-#------------------------Generation 2-----------------
-newguy = Weapon.new({
-	"weapon_damage" => 20,
-	"damage_type" => "acid",
-	"weapon_appearance" => "mace",
-	"weapon_size" => "small"
-})
-
-g2 = g1.breed(newguy)
-g22 = g12.breed(newguy)
-g23 = g13.breed(newguy)
-g24 = g14.breed(newguy)
-
-puts ""
-puts g2.get_stats()
-puts g22.get_stats()
-puts g23.get_stats()
-puts g24.get_stats()
-puts ""
- 
-#------------------------Generation 3-----------------
-newguy2 = Weapon.new({
-	"weapon_damage" => 15,
-	"damage_type" => "fire",
-	"weapon_appearance" => "staff",
-	"weapon_size" => "huge"
-})
-
-g3 = g2.breed(newguy2)
-g32 = g22.breed(newguy2)
-g33 = g23.breed(newguy2)
-g34 = g24.breed(newguy2)
-
-puts ""
-puts g3.get_stats()
-puts g32.get_stats()
-puts g33.get_stats()
-puts g34.get_stats()
-puts ""
- 
