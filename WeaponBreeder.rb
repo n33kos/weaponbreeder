@@ -10,7 +10,7 @@ class Entity
 		"projectile" => "none" #[arrow,meteor,bolt,beam]
 	}
 
-	def initialize(stats)
+	def initialize(stats = {})
 		@stats = {
 			"is_mortal" => stats["is_mortal"],
 			"hit_points" => stats["hit_points"],
@@ -25,6 +25,10 @@ class Entity
 
 	def get_stats()
 		return @stats
+	end
+
+	def set_stats(stats)
+		@stats = stats
 	end
 
 	def breed(mate)
@@ -53,139 +57,44 @@ class Entity
 	def mutate_stat(stat, key)
 		if stat.is_a? Integer or stat.is_a? Float
 			if rand > 0.5
-				return stat*2
+				return stat = stat + stat*0.5
 			else
-				return stat/2
+				return stat = stat - stat*0.5
 			end
 		else
 			return "mutated #{stat}"
 		end
 	end
+
+	def randomize_stats()
+		all_types = ["object","weapon","enemy"]
+		all_sizes = ["tiny","small","medium","large","huge"]
+		all_elemental = ["fire","water","earth","air","spirit","acid","lightning","vampiric","holy","shadow","knockback","none"]
+		all_sprites = ["dagger","sword","bow","wand","rock","zombie","wolf","bat","slime","bush","treasure_chest"]
+		all_projectiles = ["arrow","meteor","bolt","beam","spray","bomb","sparkles", "none"]
+
+		stats = {}
+		stats["is_mortal"] = rand < 0.5 ? true : false
+		stats["hit_points"] = (rand * 1024).floor
+		stats["damage"] = (rand * 512).floor
+		stats["entity_type"] = all_types[rand(0...all_types.length)]
+		stats["size"] = all_sizes[rand(0...all_sizes.length)]
+		stats["elemental_type"] = all_elemental[rand(0...all_elemental.length)]
+		stats["sprite"] = all_sprites[rand(0...all_sprites.length)]
+		stats["projectile"] = all_projectiles[rand(0...all_projectiles.length)]
+
+		return stats
+	end 
 end
 
+#start with ranom gene pool
+@gene_pool = []
+20.times do
+	rand_entity = Entity.new()
+	rand_entity.set_stats(rand_entity.randomize_stats())
+	@gene_pool << rand_entity
+end
 
-@gene_pool = [
-	Entity.new({
-		"is_mortal" => true,
-		"hit_points" => 5,
-		"entity_type" => "object",
-		"size" => "small",
-		"elemental_type" => "fire",
-		"damage" => 2,
-		"sprite" => 'flame',
-		"projectile" => "none"
-	}),
-	Entity.new({
-		"is_mortal" => true,
-		"hit_points" => 5,
-		"entity_type" => "object",
-		"size" => "medium",
-		"elemental_type" => "earth",
-		"damage" => 0,
-		"sprite" => 'rock',
-		"projectile" => "none"
-	}),
-	Entity.new({
-		"is_mortal" => false,
-		"hit_points" => 50,
-		"entity_type" => "object",
-		"size" => "large",
-		"elemental_type" => "none",
-		"damage" => 0,
-		"sprite" => 'treasure_chest',
-		"projectile" => "none"
-	}),
-	Entity.new({
-		"is_mortal" => false,
-		"hit_points" => 0,
-		"entity_type" => "weapon",
-		"size" => "large",
-		"elemental_type" => "holy",
-		"damage" => -2,
-		"sprite" => 'dagger',
-		"projectile" => "none"
-	}),
-	Entity.new({
-		"is_mortal" => false,
-		"hit_points" => 0,
-		"entity_type" => "weapon",
-		"size" => "small",
-		"elemental_type" => "shadow",
-		"damage" => 12,
-		"sprite" => 'wand',
-		"projectile" => "magic_missile"
-	}),
-	Entity.new({
-		"is_mortal" => false,
-		"hit_points" => 0,
-		"entity_type" => "weapon",
-		"size" => "tiny",
-		"elemental_type" => "water",
-		"damage" => 3,
-		"sprite" => "dagger",
-		"projectile" => "none"
-	}),
-	Entity.new({
-		"is_mortal" => false,
-		"hit_points" => 0,
-		"entity_type" => "weapon",
-		"size" => "medium",
-		"elemental_type" => "fire",
-		"damage" => 5,
-		"sprite" => "sword",
-		"projectile" => "none"
-	}),
-	Entity.new({
-		"is_mortal" => false,
-		"hit_points" => 0,
-		"entity_type" => "weapon",
-		"size" => "large",
-		"elemental_type" => "earth",
-		"damage" => 0,
-		"sprite" => "bow",
-		"projectile" => "arrow"
-	}),
-	Entity.new({
-		"is_mortal" => false,
-		"hit_points" => 0,
-		"entity_type" => "weapon",
-		"size" => "huge",
-		"elemental_type" => "air",
-		"damage" => 0,
-		"sprite" => "wand",
-		"projectile" => "meteor"
-	}),
-	Entity.new({
-		"is_mortal" => true,
-		"hit_points" => 10,
-		"entity_type" => "enemy",
-		"size" => "large",
-		"elemental_type" => "acid",
-		"damage" => 10,
-		"sprite" => "zombie",
-		"projectile" => "none"
-	}),
-	Entity.new({
-		"is_mortal" => true,
-		"hit_points" => 5,
-		"entity_type" => "enemy",
-		"size" => "small",
-		"elemental_type" => "vampiric",
-		"damage" => 2,
-		"sprite" => "vampire_bat",
-		"projectile" => "fangs"
-	}),
-	Entity.new({
-		"is_mortal" => true,
-		"hit_points" => 8,
-		"entity_type" => "enemy",
-		"size" => "medium",
-		"elemental_type" => "lightning",
-		"damage" => 6,
-		"sprite" => "wolf",
-		"projectile" => "none"
-	}),
-]
 
 @gen_1 = []
 @gene_pool.each_with_index do |val, index| 
