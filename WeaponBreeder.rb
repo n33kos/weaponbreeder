@@ -1,18 +1,30 @@
 class Entity
+	#1. Build a repeatable type class, then ensure that all stats for all types are included in the mix allowing for dynamically added types.
+	#2. Implement a level based value scaling system
+	#3. Determine where this will be deployed (Executable, Rails, Terminal)
+	#4. Build an easy-to-use GUI
+
 	@stats = {
-		"is_mortal" => false, #can I die?
-		"hit_points" => 0, #hp 1-9999
-		"entity_type" => "none", #["object",weapon,enemy,player]
-		"size" => "none", #[tiny,small,medium,large,huge]
-		"elemental_type" => "none", #[fire,Water,earth,air,spirit,acid,none]
-		"damage" => 0, #damage value on touch
-		"sprite" => "none", #[dagger,sword,bow,wand,rock,player,zombie]
-		"projectile" => "none" #[arrow,meteor,bolt,beam]
+		"is_mortal" => false,
+		"level" => 1,
+		"hit_points" => 0,
+		"entity_type" => "none",
+		"size" => "none",
+		"elemental_type" => "none",
+		"damage" => 0,
+		"sprite" => "none",
+		"projectile" => "none"
 	}
+	$all_types = ["object","weapon","enemy"]
+	$all_sizes = ["tiny","small","medium","large","huge"]
+	$all_elemental = ["fire","water","earth","air","spirit","acid","lightning","vampiric","holy","shadow","knockback","none"]
+	$all_sprites = ["dagger","sword","bow","wand","rock","zombie","wolf","bat","slime","bush","treasure_chest","troll","flowers"]
+	$all_projectiles = ["arrow","meteor","bolt","light_beam","bomb","sparkles","bubbles","none"]
 
 	def initialize(stats = {})
 		@stats = {
 			"is_mortal" => stats["is_mortal"],
+			"level" => stats["level"],
 			"hit_points" => stats["hit_points"],
 			"entity_type" => stats["entity_type"],
 			"size" => stats["size"],
@@ -37,15 +49,13 @@ class Entity
 		@stats.each do |key, stat|	
 			if rand > 0.5
 				if rand < 0.1
-					newstat = mutate_stat(stat, key)
-					bebe_stats[key] = newstat
+					bebe_stats[key] = mutate_stat(stat, key)
 				else
 					bebe_stats[key] = stat
 				end
 			else
 				if rand < 0.1
-					newstat = mutate_stat(mate_stats[key], key)
-					bebe_stats[key] = newstat
+					bebe_stats[key] = mutate_stat(mate_stats[key], key)
 				else	
 					bebe_stats[key] = mate_stats[key]
 				end
@@ -55,39 +65,43 @@ class Entity
 	end
 
 	def mutate_stat(stat, key)
-		if stat.is_a? Integer or stat.is_a? Float
+		if key == "entity_type"
+			return $all_types[rand(0...$all_types.length)]
+		elsif key == "is_mortal"
+			return rand < 0.5 ? true : false
+		elsif key == "size"
+			return $all_sizes[rand(0...$all_sizes.length)]
+		elsif key == "elemental_type"
+			return $all_elemental[rand(0...$all_elemental.length)]
+		elsif key == "sprite"
+			return $all_sprites[rand(0...$all_sprites.length)]
+		elsif key == "projectile"
+			return $all_projectiles[rand(0...$all_projectiles.length)]
+		elsif stat.is_a? Integer or stat.is_a? Float
 			if rand > 0.5
-				return stat = stat + stat*0.5
+				return (stat + stat*0.5).to_i
 			else
-				return stat = stat - stat*0.5
+				return (stat - stat*0.5).to_i
 			end
-		else
-			return "mutated #{stat}"
 		end
 	end
 
 	def randomize_stats()
-		all_types = ["object","weapon","enemy"]
-		all_sizes = ["tiny","small","medium","large","huge"]
-		all_elemental = ["fire","water","earth","air","spirit","acid","lightning","vampiric","holy","shadow","knockback","none"]
-		all_sprites = ["dagger","sword","bow","wand","rock","zombie","wolf","bat","slime","bush","treasure_chest"]
-		all_projectiles = ["arrow","meteor","bolt","beam","spray","bomb","sparkles", "none"]
-
 		stats = {}
 		stats["is_mortal"] = rand < 0.5 ? true : false
-		stats["hit_points"] = (rand * 1024).floor
-		stats["damage"] = (rand * 512).floor
-		stats["entity_type"] = all_types[rand(0...all_types.length)]
-		stats["size"] = all_sizes[rand(0...all_sizes.length)]
-		stats["elemental_type"] = all_elemental[rand(0...all_elemental.length)]
-		stats["sprite"] = all_sprites[rand(0...all_sprites.length)]
-		stats["projectile"] = all_projectiles[rand(0...all_projectiles.length)]
-
+		stats["level"] = (rand * 50).floor
+		stats["hit_points"] = (rand * 100).floor
+		stats["damage"] = (rand * 100).floor
+		stats["entity_type"] = $all_types[rand(0...$all_types.length)]
+		stats["size"] = $all_sizes[rand(0...$all_sizes.length)]
+		stats["elemental_type"] = $all_elemental[rand(0...$all_elemental.length)]
+		stats["sprite"] = $all_sprites[rand(0...$all_sprites.length)]
+		stats["projectile"] = $all_projectiles[rand(0...$all_projectiles.length)]
 		return stats
 	end 
 end
 
-#start with ranom gene pool
+#start with random gene pool
 @gene_pool = []
 20.times do
 	rand_entity = Entity.new()
