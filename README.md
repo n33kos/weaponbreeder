@@ -1,9 +1,8 @@
 # WeaponBreeder
-A customizable __Weapon__, __Item__, __Armor__, or __*Anything*__ breeding system.
+A customizable Weapon, Item, Armor, or *Anything* breeding system.
 
-Each attribute (or allele) of the __customizable entity types__ are genetically transferrable, allowing for the seeded random generation of weapons and items
+Each attribute (or allele) of the customizable entity types are genetically transferrable, allowing for the seeded random generation of weapons and items
 
------
 
 ### Usage :
 ```sh
@@ -13,7 +12,6 @@ Ruby WeaponBreeder.rb {int:generations} {int:children} {int:generation_delay}
  - __children__ - _int_ - How many entities each generation will have
  - __generation_delay__ - _float_ - How long to sleep between generations (seconds)
  
------
 
 ### Customization:
 Seed values are all managed by their respective __Type__ object. All values for all types are merged into the probability cloud to ensure genetic compatability with one another.
