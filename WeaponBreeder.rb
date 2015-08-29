@@ -1,105 +1,43 @@
-class Entity
-	#1. Build a repeatable type class, then ensure that all stats for all types are included in the mix allowing for dynamically added types.
-	#2. Implement a level based value scaling system
-	#3. Determine where this will be deployed (Executable, Rails, Terminal)
-	#4. Build an easy-to-use GUI
+#1. Determine best way to make lists dynamically created based on type variables
+#2. Implement a level based value scaling system
+#3. Implement 'fitness' in breeding algorithm
+#3. Determine where this will be deployed (Executable, Rails, Terminal)
+#4. Build an easy-to-use GUI
 
-	@stats = {
-		"is_mortal" => false,
-		"level" => 1,
-		"hit_points" => 0,
-		"entity_type" => "none",
-		"size" => "none",
-		"elemental_type" => "none",
-		"damage" => 0,
-		"sprite" => "none",
-		"projectile" => "none"
-	}
-	$all_types = ["object","weapon","enemy"]
-	$all_sizes = ["tiny","small","medium","large","huge"]
-	$all_elemental = ["fire","water","earth","air","spirit","acid","lightning","vampiric","holy","shadow","knockback","none"]
-	$all_sprites = ["dagger","sword","bow","wand","rock","zombie","wolf","bat","slime","bush","treasure_chest","troll","flowers"]
-	$all_projectiles = ["arrow","meteor","bolt","light_beam","bomb","sparkles","bubbles","none"]
+#load libs
+load 'type.rb'
+load 'entity.rb'
 
-	def initialize(stats = {})
-		@stats = {
-			"is_mortal" => stats["is_mortal"],
-			"level" => stats["level"],
-			"hit_points" => stats["hit_points"],
-			"entity_type" => stats["entity_type"],
-			"size" => stats["size"],
-			"elemental_type" => stats["elemental_type"],
-			"damage" => stats["damage"],
-			"sprite" => stats["sprite"],
-			"projectile" => stats["projectile"]
-		}
-	end
+#init entity types
+$all_types = [
+	Type.new("object", {
+		"sizes" => ["tiny","small","medium","large","huge"],
+		"elements" => ["fire","water","earth","air","spirit","acid","lightning","vampiric","holy","shadow","knockback","none"],
+		"sprites" => ["dagger","sword","bow","wand","rock","zombie","wolf","bat","slime","bush","treasure_chest","troll","flowers"]
+	}),
+	Type.new("weapon", {
+		"projectiles" => ["arrow","meteor","bolt","light_beam","bomb","sparkles","bubbles","none"]
+	}),
+	Type.new("enemy", {
+		"is_mortal" => [true,false],
+		"level" => [0,60],#[minval,maxval]
+		"hit_points" => [0,100],#[minval,maxval]
+	})
+]
 
-	def get_stats()
-		return @stats
-	end
 
-	def set_stats(stats)
-		@stats = stats
-	end
+#PUT THESE GUYS UP IN THE TYPE DECLARATIONS	
+#"entity_type" => stats["entity_type"],
+#"size" => stats["size"],
+#"elemental_type" => stats["elemental_type"],
+#"damage" => stats["damage"],
+#"sprite" => stats["sprite"],
+#"projectile" => stats["projectile"]
 
-	def breed(mate)
-		mate_stats = mate.get_stats
-		bebe_stats = {}
-		@stats.each do |key, stat|	
-			if rand > 0.5
-				if rand < 0.1
-					bebe_stats[key] = mutate_stat(stat, key)
-				else
-					bebe_stats[key] = stat
-				end
-			else
-				if rand < 0.1
-					bebe_stats[key] = mutate_stat(mate_stats[key], key)
-				else	
-					bebe_stats[key] = mate_stats[key]
-				end
-			end
-		end
-		return Entity.new(bebe_stats)
-	end
+#THEN REGENERATE ALL THE TYPE LISTS
 
-	def mutate_stat(stat, key)
-		if key == "entity_type"
-			return $all_types[rand(0...$all_types.length)]
-		elsif key == "is_mortal"
-			return rand < 0.5 ? true : false
-		elsif key == "size"
-			return $all_sizes[rand(0...$all_sizes.length)]
-		elsif key == "elemental_type"
-			return $all_elemental[rand(0...$all_elemental.length)]
-		elsif key == "sprite"
-			return $all_sprites[rand(0...$all_sprites.length)]
-		elsif key == "projectile"
-			return $all_projectiles[rand(0...$all_projectiles.length)]
-		elsif stat.is_a? Integer or stat.is_a? Float
-			if rand > 0.5
-				return (stat + stat*0.5).to_i
-			else
-				return (stat - stat*0.5).to_i
-			end
-		end
-	end
+#THEN MODIFY THE ENTITY TO DYNAMICALLY GRAB ALL OF THE @ALL_SOMETHING LISTS
 
-	def randomize_stats()
-		stats = {}
-		stats["is_mortal"] = rand < 0.5 ? true : false
-		stats["level"] = (rand * 50).floor
-		stats["hit_points"] = (rand * 100).floor
-		stats["damage"] = (rand * 100).floor
-		stats["entity_type"] = $all_types[rand(0...$all_types.length)]
-		stats["size"] = $all_sizes[rand(0...$all_sizes.length)]
-		stats["elemental_type"] = $all_elemental[rand(0...$all_elemental.length)]
-		stats["sprite"] = $all_sprites[rand(0...$all_sprites.length)]
-		stats["projectile"] = $all_projectiles[rand(0...$all_projectiles.length)]
-		return stats
-	end 
-end
 
 #start with random gene pool
 @gene_pool = []
@@ -156,6 +94,10 @@ end
 puts "Generation 4"
 puts "-----------------"
 @gen_3[3].get_stats().each do |key, value|
-	puts "#{key} - #{value}"
+	if key == "entity_type"
+		puts value.name
+	else
+		puts "#{key} - #{value}"
+	end
 end
 puts ""
