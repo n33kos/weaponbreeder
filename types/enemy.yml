@@ -1,0 +1,19 @@
+is_mortal:
+ - true
+ - false
+level:
+ - 0
+ - 10
+hit_point:
+ - 0
+ - 10
+sprite:
+ - zombie
+ - wolf
+ - bat
+ - slime
+ - troll
+behavior:
+ - wander
+ - seek
+ - oscillate

@@ -16,5 +16,4 @@ class Type
 	def variables
 		return @type_variables
 	end
-
 end

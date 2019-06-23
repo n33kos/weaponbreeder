@@ -1,0 +1,17 @@
+level:
+ - 0
+ - 10
+defense:
+ - 0
+ - 10
+projectile_resistance:
+ - 0
+ - 10
+melee_resistance:
+ - 0
+ - 10
+sprite:
+ - helm
+ - gauntlet
+ - pauldron
+ - buckler

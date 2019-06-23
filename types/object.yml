@@ -1,0 +1,22 @@
+size:
+  - medium
+  - large
+  - huge
+element:
+  - fire
+  - water
+  - earth
+  - air
+  - spirit
+  - acid
+  - lightning
+  - vampiric
+  - holy
+  - shadow
+  - knockback
+  - none
+sprite:
+ - rock
+ - bush
+ - treasure chest
+ - flowers

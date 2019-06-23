@@ -1,0 +1,20 @@
+size:
+ - tiny
+ - small
+projectile:
+ - arrow
+ - meteor
+ - bolt
+ - light beam
+ - bomb
+ - sparkles
+ - bubbles
+ - none
+damage:
+ - 0
+ - 10
+sprite:
+ - dagger
+ - sword
+ - bow
+ - wand
