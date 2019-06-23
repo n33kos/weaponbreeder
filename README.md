@@ -1,18 +1,23 @@
 # WeaponBreeder
 A customizable Weapon, Item, Armor, or *Anything* breeding system.
 
-Each attribute (or allele) of the customizable entity types are genetically transferrable, allowing for the seeded random generation of weapons and items
+Each attribute (or allele) of the customizable entity types are genetically transferrable, allowing for the seeded random generation of weapons and items. By default all types are placed into the gene pool and all types are able to breed with one another.
 
 ### Usage :
 ```sh
-ruby weaponbreeder.rb {int:generations} {int:child_count} {int:generation_delay} {int:fitness_iterations} {bool:display_intermediate_generations}
+ruby weaponbreeder.rb [args]
 ```
- - __generations__ - _int_ - How many generations to iterate through
- - __children__ - _int_ - How many entities each generation will have
- - __generation_delay__ - _float_ - How long to sleep between generations (seconds)
- - __fitness_iterations__ - int - How many iterations to run for fitness function
- - __display_intermediate_generations__ - bool - show intermetiate generations instead of just last
 
+ | Argument   |      Type      |  Description |
+ |----------|:-------------:|------:|
+ | -r --results | Integer | How many results to return |
+ | -g --generations | Integer | How many generations to evolve over |
+ | -m --mutation-chance | Float | Decimal percentage for how common mutations are |
+ | -p --gene-pool-size | Integer | Size of the gene pool for each generation |
+ | -d --delay | Integer | Delay between processing generations (in seconds) |
+ | -f --fitness-iterations | Integer | How many iterations to run the fitness function for |
+ | -t --types-allowed | string | A comma separated list of types to include in the probability cloud |
+ | -i --display-intermediate-generations | Flag | Render gene pool for intermediate generations |
 
 ### Customization:
 Seed values are all managed by their respective __Type__ object. All values for all types are merged into the probability cloud to ensure genetic compatability with one another.

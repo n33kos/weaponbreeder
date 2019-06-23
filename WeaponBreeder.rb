@@ -1,7 +1,7 @@
 # WeaponBreeder 1.1
 # ------------------------------------------------
-# usage: ruby weaponbreeder.rb {int:generations} {int:child_count} {int:generation_delay} {int:fitness_iterations} {bool:display_intermediate_generations}
-# Customization: Add new type objects to the $probability_cloud array and give them whatever stats you want.
+# usage: ruby weaponbreeder.rb
+# Customization: Add new type objects to the './types' folder to include them in child results
 # ------------------------------------------------
 
 #------Libs------
@@ -12,40 +12,47 @@ load './classes/type.rb'
 load './classes/entity.rb'
 
 #------Default Configs------
-$generation_to_iterate = 20
-$child_count = 5
+$results = 5
+$generations = 20
+$mutation_chance = 0.05
+$gene_pool_size = 20
 $generation_delay = 0.01
-$fitness_iterations = 10
+$fitness_iterations = 8
+$types_allowed = nil
 $display_intermediate_generations = false
 
-#------Global Variables------
-$types = []
-$probability_cloud
-$gene_pool
-$children_pool = []
-
-#------Arguments------
-if ARGV[0]
-	$generation_to_iterate = ARGV[0].to_i
-end
-
-if ARGV[1]
-	$child_count = ARGV[1].to_i
-end
-
-if ARGV[2]
-	$generation_delay = ARGV[2].to_i
-end
-
-if ARGV[3]
-	$fitness_iterations = ARGV[3].to_i
-end
-
-if ARGV[4]
-	$display_intermediate_generations = ARGV[4]
-end
-
 #------Functions------
+def parseArguments()
+	ARGV.each_with_index do |arg, index|
+		case arg
+			when '-r', '--results'
+				# Integer
+				$results = ARGV[index + 1].to_i
+			when '-g', '--generations'
+				# Integer
+				$generations = ARGV[index + 1].to_i
+			when '-m', '--mutation-chance'
+				# Float
+				$mutation_chance = ARGV[index + 1].to_f
+			when '-p', '--gene-pool-size'
+				# Integer
+				$gene_pool_size = ARGV[index + 1].to_i
+			when '-d', '--delay'
+				# Integer
+				$generation_delay = ARGV[index + 1].to_i
+			when '-f', '--fitness-iterations'
+				# Integer
+				$fitness_iterations = ARGV[index + 1].to_i
+			when '-t', '--types-allowed'
+				# Comma separated list of types
+				$types_allowed = ARGV[index + 1].gsub(/\s+/, "").split(',')
+			when '-i', '--display-intermediate-generations'
+				# Flag
+				$display_intermediate_generations = true
+		end
+	end
+end
+
 def generate_probability_cloud(entity_types)
 	probability_cloud = {:type => []}
 
@@ -57,10 +64,10 @@ def generate_probability_cloud(entity_types)
 	return probability_cloud
 end
 
-def randomize_stats()
+def randomize_stats(probability_cloud)
 	stats = {}
 
-	$probability_cloud.each do |symbol,possible_stats|
+	probability_cloud.each do |symbol,possible_stats|
 		possible_stats.each do |val|
 			if (val.is_a? Integer or val.is_a? Float) and possible_stats.length == 2
 				#if its 2 integers or floats its probably a range
@@ -77,7 +84,7 @@ def randomize_stats()
 	return stats
 end
 
-def mutate_stats(stats)
+def mutate_stats(stats, probability_cloud)
 	mutated_stats = {}
 
 	stats.each do |key, val|
@@ -98,7 +105,7 @@ def mutate_stats(stats)
 				mutated_stats[key] = (stats[key] - 100*rand_array[0]).to_i
 			end
 		else
-			mutated_stats[key] = $probability_cloud[key][rand(0...$probability_cloud[key].length)]
+			mutated_stats[key] = probability_cloud[key][rand(0...probability_cloud[key].length)]
 		end
 	end
 
@@ -106,67 +113,99 @@ def mutate_stats(stats)
 end
 
 def import_types()
-	Dir["./types/*.yml"].each {|file|
+	types = []
+
+	Dir["./types/*.yml"].each do |file|
 		type_name = File.basename(file, ".*")
-		config = YAML.load_file(file)
-		$types.push(Type.new(type_name, config))
-	}
+
+		if $types_allowed.nil? or $types_allowed.include? type_name
+			config = YAML.load_file(file)
+			types.push(Type.new(type_name, config))
+		end
+	end
+
+	return types
 end
 
-def print_generation(generation_count)
-	puts "-----------------------Generation #{generation_count}---------------------------"
+def print_generation(generation_count, children_pool)
+	puts "-----------------------Generation #{generation_count + 1}---------------------------"
 
-	$children_pool.each_with_index do |item, i|
-		puts "Child #{i + 1}"
-
-		item.get_stats.each do |symbol, value|
-			print "#{symbol}: #{value} \n"
-		end
-		puts ""
+	children_pool.each_with_index do |child, i|
+		print_result(child)
 	end
 end
 
-def seed_gene_pool()
+def print_result(result)
+	result.get_stats.each do |symbol, value|
+		print "#{symbol}: #{value} \n"
+	end
+	puts ""
+end
+
+def seed_gene_pool(probability_cloud)
 	gene_pool = []
-	$child_count.to_i.times do
+	$gene_pool_size.times do
 		rand_entity = Entity.new()
-		rand_entity.set_stats(randomize_stats())
+		rand_entity.set_stats(randomize_stats(probability_cloud))
 		gene_pool << rand_entity
 	end
 
 	return gene_pool
 end
 
-#------Execution------
-import_types()
-$probability_cloud = generate_probability_cloud($types)
+def evolve_generations(probability_cloud, gene_pool)
+	# Iterate through generations
+	$generations.times do |index|
+		# Clear children pool
+		children_pool = []
 
-# start with random gene pool
-$gene_pool = seed_gene_pool()
+		# Iterate through gene pool
+		gene_pool.each do |key, val|
+			# Make a bebe
+			bebe = key.breed(gene_pool[rand(0...gene_pool.length)])
 
-generation_count = 1
-$generation_to_iterate.to_i.times do
-	$children_pool = []
-	bebe_count = 1
-	$gene_pool.each do |key, val|
-		if rand < 0.005
-			key.set_stats(mutate_stats(key.get_stats))
+			# Random mutation chance
+			if rand < $mutation_chance
+				bebe.set_stats(mutate_stats(bebe.get_stats, probability_cloud))
+			end
+
+			# Add child to gene pool
+			children_pool << bebe
 		end
-		bebe = key.breed($gene_pool[rand(0...$gene_pool.length)])
-		$children_pool << bebe
-		bebe_count = bebe_count + 1
-	end
-	$gene_pool = $children_pool
-	generation_count = generation_count + 1
 
-	if generation_count == $generation_to_iterate
-		print_generation(generation_count)
-	else
+		# Set all newly created children as new gene pool
+		gene_pool = children_pool
+
+		# Display intermediate generations if desired
 		if $display_intermediate_generations
-			print_generation(generation_count)
+			print_generation(index, children_pool)
 		end
+
+		# Delay for a bit
+		sleep Float($generation_delay)
 	end
 
-
-	sleep Float($generation_delay)
+	return gene_pool
 end
+
+def generate_results(gene_pool)
+	results = []
+
+	$results.times do |index|
+		random_child = gene_pool[rand(0...gene_pool.length)]
+		result = random_child.breed(gene_pool[rand(0...gene_pool.length)])
+		results.push(result)
+	end
+
+	results.each do |result|
+		print_result(result)
+	end
+end
+
+#------Execution------
+parseArguments()
+types = import_types()
+probability_cloud = generate_probability_cloud(types)
+gene_pool = seed_gene_pool(probability_cloud)
+gene_pool = evolve_generations(probability_cloud, gene_pool)
+generate_results(gene_pool)
